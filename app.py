@@ -1,6 +1,6 @@
 import streamlit as st
 
-# We import the functions you built in ui_components.py
+# 1. Import UI Layout functions
 from ui_components import (
     setup_page, 
     render_sidebar, 
@@ -9,35 +9,66 @@ from ui_components import (
     render_learning_card
 )
 
-# 1. Draw the Header
+# 2. Import Machine Learning Model functions
+from ml-engine import train_model, analyze_telemetry
+
+# 3. Import AI Copilot & Learning functions
+from ai_copilot import (
+    get_copilot_diagnosis, 
+    get_recommended_action, 
+    get_personalized_lesson
+)
+
+# Set up page config and layout header
 setup_page()
 
-# 2. Draw the Sidebar Switch
+# Train/Load ML Model (Cache it so it runs instantly without re-training every click)
+@st.cache_resource
+def load_ml_engine():
+    return train_model()
+
+model = load_ml_engine()
+
+# Render Demo Sidebar Toggle
 simulate_failure = render_sidebar()
 
-# 3. Dummy Data (Fake data to test your frontend display)
+# Define Sensor Data based on Toggle Switch
 if simulate_failure:
-    machines = {
-        "Machine 01": {"status": "NORMAL", "score": 5},
-        "Machine 02": {"status": "NORMAL", "score": 8},
-        "Machine 03": {"status": "CRITICAL", "score": 89},
-        "Machine 04": {"status": "NORMAL", "score": 12},
-    }
     m3_readings = {"temp": 91.5, "vib": 48.2, "press": 52.0}
-    ai_message = "⚠️ Machine 03 shows high temperature and abnormal vibration! High risk of motor failure. Recommendation: Inspect immediately."
-    is_anomaly = True
 else:
-    machines = {
-        "Machine 01": {"status": "NORMAL", "score": 5},
-        "Machine 02": {"status": "NORMAL", "score": 8},
-        "Machine 03": {"status": "NORMAL", "score": 10},
-        "Machine 04": {"status": "NORMAL", "score": 12},
-    }
     m3_readings = {"temp": 65.0, "vib": 20.0, "press": 50.0}
-    ai_message = "🟢 Machine 03 is running smoothly within normal limits."
-    is_anomaly = False
 
-# 4. Render all parts on screen
+# Analyze Machine 03 using the ML Engine
+is_anomaly, score = analyze_telemetry(
+    model, 
+    m3_readings["temp"], 
+    m3_readings["vib"], 
+    m3_readings["press"]
+)
+
+# Build Dynamic Machine Status Map
+machines = {
+    "Machine 01": {"status": "NORMAL", "score": 5},
+    "Machine 02": {"status": "NORMAL", "score": 8},
+    "Machine 03": {
+        "status": "CRITICAL" if is_anomaly else "NORMAL", 
+        "score": score
+    },
+    "Machine 04": {"status": "NORMAL", "score": 12},
+}
+
+# Generate AI Diagnosis from AI Copilot Engine
+ai_message = get_copilot_diagnosis(
+    m3_readings["temp"], 
+    m3_readings["vib"], 
+    m3_readings["press"], 
+    is_anomaly
+)
+
+# Render Everything to Screen
 render_machine_grid(machines)
 render_copilot_panel(m3_readings, ai_message, is_anomaly)
+
+# Fetch Personalised Micro-Learning Lesson
+lesson_data = get_personalized_lesson(m3_readings["vib"])
 render_learning_card(is_anomaly)
