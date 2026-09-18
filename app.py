@@ -10,7 +10,7 @@ from ui_components import (
 )
 
 # 2. Import Machine Learning Model functions
-from ml-engine import train_model, analyze_telemetry
+from ml_engine import train_model, analyze_telemetry
 
 # 3. Import AI Copilot & Learning functions
 from ai_copilot import (
