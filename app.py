@@ -22,7 +22,7 @@ from ai_copilot import (
 # Set up page config and layout header
 setup_page()
 
-# Train/Load ML Model (Cache it so it runs instantly without re-training every click)
+# Train/Load ML Model
 @st.cache_resource
 def load_ml_engine():
     return train_model()
@@ -65,10 +65,7 @@ ai_message = get_copilot_diagnosis(
     is_anomaly
 )
 
-# Render Everything to Screen
+# Render Main Dashboard Components
 render_machine_grid(machines)
 render_copilot_panel(m3_readings, ai_message, is_anomaly)
-
-# Fetch Personalised Micro-Learning Lesson
-lesson_data = get_personalized_lesson(m3_readings["vib"])
 render_learning_card(is_anomaly)
